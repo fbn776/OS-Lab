@@ -9,20 +9,13 @@ typedef struct {
 	int priority;
 	int completion_t;
 	int rem_time;
+	int turn_around_t;
+	int waiting_t;
 } Process;
 
-typedef struct {
-	int PID;
-	int arrival_t;
-	int burst_t;
-	int completion_t;
-	int turn_around_t;
-	int waiting_time;
-} ProcessRow;
-
 // Function pointers
-typedef int (*GetProp)(ProcessRow p);
-typedef int (*getBT)(Process p);
+typedef int (*GetProp)(Process p);
+
 typedef Process (*GetNextProcess)(Process p[], int *f, int *r);
 
 void swapInQueue(Process Q[], int i, int j) {
@@ -38,18 +31,6 @@ void sort(Process p[], int n) {
 		for (j = 0; j < n - i - 1; j++)
 			if (p[j].arrival_t > p[j + 1].arrival_t)
 				swapInQueue(p, j, j + 1);
-}
-
-void sortTable(ProcessRow p[], int n) {
-	int i, j;
-	ProcessRow temp;
-	for (i = 0; i < n - 1; i++)
-		for (j = 0; j < n - i - 1; j++)
-			if (p[j].PID > p[j + 1].PID) {
-				temp = p[j];
-				p[j] = p[j + 1];
-				p[j + 1] = temp;
-			}
 }
 
 void cpyArr(Process *src, int n, Process *dest) {
@@ -68,16 +49,15 @@ int getRemTime(Process p) {
 	return p.rem_time;
 }
 
-
-int getTurnTime(ProcessRow pt) {
+int getTurnTime(Process pt) {
 	return pt.turn_around_t;
 }
 
-int getWaitingTime(ProcessRow pt) {
-	return pt.waiting_time;
+int getWaitingTime(Process pt) {
+	return pt.waiting_t;
 }
 
-float getAvg(ProcessRow pt[], int n, GetProp getter) {
+float getAvg(Process pt[], int n, GetProp getter) {
 	int sum = 0, i = 0;
 	for (i = 0; i < n; i++)
 		sum += getter(pt[i]);
@@ -97,36 +77,9 @@ void drawLine(int n, char line, char ends, int eol) {
 		printf("\n");
 }
 
-void displayProcess(Process p[], int n, const char *title) {
+void displayAsTable(Process pt[], int n, const char *title, int displayFull) {
 	int i;
-	int lineLen = 48;
-	int titleLen = strlen(title);
-
-	drawLine((lineLen - titleLen) / 2, ' ', ' ', 0);
-	printf("%s", title);
-	drawLine((lineLen - titleLen) / 2, ' ', ' ', 1);
-	drawLine(lineLen, '-', '+', 1);
-
-	printf("| %5s | %10s | %10s | %10s |\n", "PID", "Arrival", "Burst", "Priority");
-	drawLine(lineLen, '-', '|', 1);
-	for (i = 0; i < n; i++)
-		printf("| %5d | %10d | %10d | %10d |\n", p[i].PID, p[i].arrival_t, p[i].burst_t, p[i].priority);
-	drawLine(lineLen, '-', '+', 1);
-}
-
-void printProcess(Process p, const char *title) {
-	printf("---%s---\n", title);
-	int lineLen = 48 + 13;
-	drawLine(lineLen, '-', '+', 1);
-	printf("| %5s | %10s | %10s | %10s | %10s |\n", "PID", "Arrival", "Burst", "Priority", "Remaining");
-	drawLine(lineLen, '-', '|', 1);
-	printf("| %5d | %10d | %10d | %10d | %10d |\n", p.PID, p.arrival_t, p.burst_t, p.priority, p.rem_time);
-	drawLine(lineLen, '-', '+', 1);
-}
-
-void displayCalcTable(ProcessRow pt[], int n, const char *title) {
-	int i;
-	int lineLen = 74;
+	int lineLen = displayFull ? 74 : 48;
 	int titleLen = strlen(title);
 
 	printf("\n");
@@ -135,20 +88,24 @@ void displayCalcTable(ProcessRow pt[], int n, const char *title) {
 	drawLine((lineLen - titleLen) / 2, ' ', ' ', 1);
 	drawLine(lineLen, '-', '+', 1);
 
-	printf("| %5s | %10s | %10s | %10s | %10s | %10s |\n", "PID", "Arrival", "Burst", "Completion",
-		   "Turn time", "Waiting");
+	displayFull ?
+	printf("| %5s | %10s | %10s | %10s | %10s | %10s |\n",
+		   "PID", "Arrival", "Burst", "Completion", "Turn time", "Waiting") :
+	printf("| %5s | %10s | %10s | %10s |\n",
+		   "PID", "Arrival", "Burst", "Priority");
+
 	drawLine(lineLen, '-', '|', 1);
 	for (i = 0; i < n; i++)
+		displayFull ?
 		printf("| %5d | %10d | %10d | %10d | %10d | %10d |\n",
-			   pt[i].PID, pt[i].arrival_t, pt[i].burst_t, pt[i].completion_t, pt[i].turn_around_t,
-			   pt[i].waiting_time);
-
+			   pt[i].PID, pt[i].arrival_t, pt[i].burst_t, pt[i].completion_t, pt[i].turn_around_t, pt[i].waiting_t) :
+		printf("| %5d | %10d | %10d | %10d |\n", pt[i].PID, pt[i].arrival_t, pt[i].burst_t, pt[i].priority);
 	drawLine(lineLen, '-', '+', 1);
 }
 
-void showResult(ProcessRow *table, int n, const char *title) {
-	sortTable(table, n);
-	displayCalcTable(table, n, title);
+void showResult(Process *table, int n, const char *title) {
+	sort(table, n);
+	displayAsTable(table, n, title, 1);
 	float turnAvg = getAvg(table, n, getTurnTime),
 			waitingAvg = getAvg(table, n, getWaitingTime);
 
@@ -190,7 +147,7 @@ void readProcess(Process arr[], int *n) {
 	}
 }
 
-Process ShortestBTDequeue(Process Q[], int *f, int *r, getBT func) {
+Process ShortestBTDequeue(Process Q[], int *f, int *r, GetProp func) {
 	int i, min = 99999, pos, AT = 0;
 	for (i = *f; i <= *r; i++)
 		if (func(Q[i]) < min || func(Q[i]) == min && Q[i].arrival_t < AT) {
@@ -224,18 +181,13 @@ Process PriorityDequeue(Process Q[], int *f, int *r) {
 
 
 void nonPreemptiveScheduling(const char *title, Process p[], int n, GetNextProcess nextProcess) {
-	ProcessRow table[SIZE];
+	Process table[SIZE];
 
-	int t = 0,
-			i,
-			completion_t = 0,
-			tn = 0;
+	int t, i, completion_t, tn = 0;
 
 	Process Q[SIZE], JobQ[SIZE];
-	int qf = 0,
-			qr = n - 1,
-			jf = -1,
-			jr = -1;
+	int qf = 0, qr = n - 1,
+			jf = -1, jr = -1;
 
 	cpyArr(p, n, Q);
 
@@ -247,14 +199,14 @@ void nonPreemptiveScheduling(const char *title, Process p[], int n, GetNextProce
 
 		while (jf != -1) {
 			Process item = nextProcess(JobQ, &jf, &jr);
-			ProcessRow row;
+			Process row;
 			completion_t += item.burst_t;
 			row.PID = item.PID;
 			row.burst_t = item.burst_t;
 			row.arrival_t = item.arrival_t;
 			row.completion_t = completion_t;
 			row.turn_around_t = row.completion_t - row.arrival_t;
-			row.waiting_time = row.turn_around_t - row.burst_t;
+			row.waiting_t = row.turn_around_t - row.burst_t;
 			t += item.burst_t;
 
 			table[tn++] = row;
@@ -266,32 +218,24 @@ void nonPreemptiveScheduling(const char *title, Process p[], int n, GetNextProce
 	showResult(table, tn, title);
 }
 
-
 void roundRobinScheduling(Process p[], int n) {
 	const int quantum = 2;
+	Process table[SIZE];
+	int t = 0, tn = 0, j, cmpt_t = 0;
 
-	ProcessRow table[SIZE];
-
-	int t = 0,
-			tn = 0, i, j,
-			cmpt_t = 0;
-
-	int qf = 0,
-			qr = n - 1,
-			jf = -1,
-			jr = -1;
+	int qf = 0, qr = n - 1,
+			jf = -1, jr = -1;
 
 	Process Q[SIZE], JobQ[SIZE];
 
 	cpyArr(p, n, Q);
 
 	while (qf != -1) {
-		for (j = qf; j <= qr; j++) {
+		for (j = qf; j <= qr; j++)
 			if (Q[j].arrival_t <= t && qf != -1) {
 				swapInQueue(Q, qf, j);
 				Enqueue(JobQ, &jf, &jr, Dequeue(Q, &qf, &qr));
 			}
-		}
 
 		if (jf != -1) {
 			Process item = ShortestBTDequeue(JobQ, &jf, &jr, getRemTime);
@@ -301,37 +245,31 @@ void roundRobinScheduling(Process p[], int n) {
 			if (item.rem_time <= 0) {
 				// If item.rem_tim is less than time quantum, then adjust future cmpt time.
 				cmpt_t = item.rem_time < 0 ? cmpt_t - item.rem_time : cmpt_t;
-				ProcessRow row;
+				Process row;
 				row.PID = item.PID;
 				row.burst_t = item.burst_t;
 				row.arrival_t = item.arrival_t;
 				row.completion_t = cmpt_t;
 				row.turn_around_t = row.completion_t - row.arrival_t;
-				row.waiting_time = row.turn_around_t - row.burst_t;
+				row.waiting_t = row.turn_around_t - row.burst_t;
 				table[tn++] = row;
 			} else
 				Enqueue(Q, &qf, &qr, item);
 
-			while (jf != -1) {
+			while (jf != -1)
 				Enqueue(Q, &qf, &qr, Dequeue(JobQ, &jf, &jr));
-			}
 		}
-
 		t += 1;
-
 	}
-
 	showResult(table, tn, "Round robin");
-
 }
-
 
 int main() {
 	Process process_arr[100];
 	int n;
 
 	readProcess(process_arr, &n);
-	displayProcess(process_arr, n, "Initial");
+	displayAsTable(process_arr, n, "Input", 0);
 	sort(process_arr, n);
 
 	nonPreemptiveScheduling("FCFS", process_arr, n, Dequeue);
