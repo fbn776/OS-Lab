@@ -20,10 +20,10 @@ Codes for KTU S4 OS lab (CST 201).
 
 ## How to run
 
-For shell scripts, use the linux terminal to run the scripts. For example, to run the factorial script, use the following command:
+For shell scripts, use the linux terminal (bash) to run the scripts. For example, to run the factorial script, use the following command:
 ```bash
-chmod +x <file.sh>
-./<file.sh>
+chmod +x file.sh
+./file.sh
 ```
 
 For C programs, compile the program using gcc and run the executable. For example, to run the FCFS scheduling algorithm, use the following commands:

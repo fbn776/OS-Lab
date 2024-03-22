@@ -179,7 +179,6 @@ Process PriorityDequeue(Process Q[], int *f, int *r) {
 	return Dequeue(Q, f, r);
 }
 
-
 void nonPreemptiveScheduling(const char *title, Process p[], int n, GetNextProcess nextProcess) {
 	Process table[SIZE];
 
