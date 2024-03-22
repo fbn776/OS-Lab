@@ -33,4 +33,4 @@ gcc fcfs.c -o fcfs
 ./fcfs
 ```
 
-> NOTE: USE MOST C CODE ONLY WORKS POSIX SYSTEMS. WINDOWS USERS MAY NEED TO USE WSL OR CYGWIN TO RUN THE CODES.
+> NOTE: Most C codes work only for POSIX systems. For Windows, use WSL or Cygwin.
