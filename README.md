@@ -1,5 +1,5 @@
 # OS-Lab
-Codes for KTU S4 OS lab (CST 201).
+Code for KTU S4 OS lab (CST 201).
 
 ## Experiments
 
@@ -7,7 +7,7 @@ Codes for KTU S4 OS lab (CST 201).
 - Bash scripts for;
   - calculating factorial of a number
   - finding fibanocci number
-  - checking whether a number is palindrome or not
+  - check whether a number is palindrome or not
   - searching for a string file
 
 ### Experiment 3
@@ -20,7 +20,8 @@ Codes for KTU S4 OS lab (CST 201).
 
 ## How to run
 
-For shell scripts, use the linux terminal (bash) to run the scripts. For example, to run the factorial script, use the following command:
+For shell scripts, use the linux terminal (bash) to run the scripts.
+For example, to run the factorial script, use the following command:
 ```bash
 chmod +x file.sh
 ./file.sh
