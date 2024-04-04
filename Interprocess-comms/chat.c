@@ -3,7 +3,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <string.h>
-#include <unistd.h>
+
 #include <pthread.h>
 
 #define SHM_KEY 0x1238
@@ -12,23 +12,23 @@
 typedef struct {
 	char str[SIZE];
 	char from_user[SIZE];
-} MessageBlock;
+} Message;
 
 typedef struct {
-	MessageBlock msgs[SIZE];
+	Message msgs[SIZE];
 	int f;
 	int r;
-} MessageBox;
+} MailBox;
 
-void addMsg(MessageBox *Q, MessageBlock item) {
+void writeMsg(MailBox *Q, Message item) {
 	if (Q->f == -1)
 		Q->f = 0;
 	(Q->r) = ((Q->r) + 1) % SIZE;
 	Q->msgs[Q->f] = item;
 }
 
-MessageBlock getMsg(MessageBox *Q) {
-	MessageBlock item = Q->msgs[Q->f];
+Message readMsg(MailBox *Q) {
+	Message item = Q->msgs[Q->f];
 	Q->f = ((Q->f) + 1) % SIZE;
 
 	if (Q->f == ((Q->r) + 1) % SIZE)
@@ -38,17 +38,17 @@ MessageBlock getMsg(MessageBox *Q) {
 }
 
 
-MessageBox *mailbox;
+MailBox *mailbox;
 char user_name[SIZE];
 
 void *message_receiver(void *params) {
 	while (1) {
 		char str[SIZE];
-		MessageBlock message;
+		Message message;
 
 		while(mailbox->f == -1) ;
 
-		message = getMsg(mailbox);
+		message = readMsg(mailbox);
 
 		if(strcmp(message.from_user, user_name) == 0)
 			continue;
@@ -66,14 +66,14 @@ int main() {
 	int shmid, shmDtCode, thd_status;
 	pthread_t receiver_thd;
 
-	shmid = shmget(SHM_KEY, sizeof(MessageBox), 0666 | IPC_CREAT);
+	shmid = shmget(SHM_KEY, sizeof(MailBox), 0666 | IPC_CREAT);
 
 	if (shmid == -1) {
 		perror("shmget");
 		exit(1);
 	}
 
-	mailbox = (MessageBox *) shmat(shmid, NULL, 0666);
+	mailbox = (MailBox *) shmat(shmid, NULL, 0666);
 
 	if (mailbox == (void *) -1) {
 		perror("Shared memory attach");
@@ -96,7 +96,7 @@ int main() {
 
 	while (1) {
 		char str[SIZE];
-		MessageBlock message;
+		Message message;
 
 		//If messages are full, wait
 		while (mailbox->f == ((mailbox->r + 1) % SIZE));
@@ -107,7 +107,7 @@ int main() {
 		strcpy(message.str, str);
 		strcpy(message.from_user, user_name);
 
-		addMsg(mailbox, message);
+		writeMsg(mailbox, message);
 		if (strcmp(str, "exit") == 0) {
 			printf("Exiting...");
 			break;
