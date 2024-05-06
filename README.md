@@ -1,21 +1,33 @@
 # OS-Lab
 Code for KTU S4 OS lab (CST 201).
 
-## Experiments
+[//]: # (## Experiments)
 
-### Experiment 1
-- Bash scripts for;
-  - calculating factorial of a number
-  - finding fibanocci number
-  - check whether a number is palindrome or not
-  - searching for a string file
+[//]: # ()
+[//]: # (### Experiment 1)
 
-### Experiment 3
-- Simulating CPU scheduling algorithms;
-  - FCFS
-  - SJF
-  - Priority
-  - Round Robin
+[//]: # (- Bash scripts for;)
+
+[//]: # (  - calculating factorial of a number)
+
+[//]: # (  - finding fibanocci number)
+
+[//]: # (  - check whether a number is palindrome or not)
+
+[//]: # (  - searching for a string file)
+
+[//]: # ()
+[//]: # (### Experiment 3)
+
+[//]: # (- Simulating CPU scheduling algorithms;)
+
+[//]: # (  - FCFS)
+
+[//]: # (  - SJF)
+
+[//]: # (  - Priority)
+
+[//]: # (  - Round Robin)
 
 
 ## How to run

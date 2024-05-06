@@ -15,7 +15,6 @@ typedef struct {
 
 // Function pointers
 typedef int (*GetProp)(Process p);
-
 typedef Process (*GetNextProcess)(Process p[], int *f, int *r);
 
 void swapInQueue(Process Q[], int i, int j) {
@@ -157,7 +156,6 @@ Process ShortestBTDequeue(Process Q[], int *f, int *r, GetProp func) {
 		}
 
 	swapInQueue(Q, *f, pos);
-
 	return Dequeue(Q, f, r);
 }
 
@@ -207,13 +205,10 @@ void nonPreemptiveScheduling(const char *title, Process p[], int n, GetNextProce
 			row.turn_around_t = row.completion_t - row.arrival_t;
 			row.waiting_t = row.turn_around_t - row.burst_t;
 			t += item.burst_t;
-
 			table[tn++] = row;
 		}
-
 		t++;
 	}
-
 	showResult(table, tn, title);
 }
 
@@ -238,7 +233,6 @@ void roundRobinScheduling(Process p[], int n) {
 
 		if (jf != -1) {
 			Process item = ShortestBTDequeue(JobQ, &jf, &jr, getRemTime);
-
 			item.rem_time -= quantum;
 			cmpt_t += quantum;
 			if (item.rem_time <= 0) {

@@ -1,11 +1,8 @@
-#!/bin/bash
-
-
-echo "a - Add"
-echo "b - Subtract"
-echo "c - Multiply"
-echo "d - Divide"
-echo "e - Modulo"
+echo "a - Add";
+echo "b - Subtract";
+echo "c - Multiply";
+echo "d - Divide";
+echo "e - Modulo";
 
 while true ; do
 	read -p "Choice: " choice
@@ -38,3 +35,4 @@ while true ; do
 		;;
 	esac
 done
+
