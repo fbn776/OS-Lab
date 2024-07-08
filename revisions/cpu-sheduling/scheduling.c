@@ -162,10 +162,42 @@ void SJF(Process procs[], int n) {
 }
 
 void RR_FCFS(Process procs[], int n) {
-	Queue jobQ;
+	Queue jobQ, readyQ;
 	Process result[SIZE];
+	int k = 0, i, t = 0, quantum = 1;
 
 	initQueue(procs, n, &jobQ);
+	readyQ.f = readyQ.r = -1;
+
+	for(i = 0;i < n; i++) {
+		jobQ.Q[i].rt = jobQ.Q[i].bt;
+	}
+
+	while(k != n) {
+		if(jobQ.f != -1) {
+			for(i = jobQ.f; i <= jobQ.r; i++) {
+				if(jobQ.Q[i].at <= t) {
+					swapProcs(jobQ.Q, i, jobQ.f);
+
+					Enqueue(&readyQ, Dequeue(&jobQ));
+				}
+			}
+		}
+
+		Process selected = Dequeue(&readyQ);
+		selected.rt -= quantum;
+		t += selected.rt < 0 ? selected.rt * -1 : quantum;
+
+		if(selected.rt <= 0) {
+			selected.ct = t;
+			result[k++] = selected;
+			continue;
+		}
+
+		Enqueue(&jobQ, selected);
+	}
+
+	displayProcess(result, n, "RR - FCFS");
 }
 
 int main() {
@@ -173,10 +205,10 @@ int main() {
 	Process procs[SIZE];
 
 	readProcesses(procs, &n);
-	displayProcess(procs, n, "Initial");
+//	displayProcess(procs, n, "Initial");
 
 	FCFS(procs, n);
 	SJF(procs, n);
-
+	RR_FCFS(procs, n);
 	return 0;
 }
